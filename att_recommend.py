@@ -13,8 +13,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 import json
 
-def att_recommend(attraction_name = ''):
-  final_data = pd.read_csv('/content/Osaka_final_data.csv')
+def att_recommend(attraction_name = '', path = ''):
+  final_data = pd.read_csv(path)
 
   label = ['간사이 공항', '오사카 국제공항']
   index = []
@@ -49,11 +49,5 @@ def att_recommend(attraction_name = ''):
 
   attraction = []
 
-  for i in range(len(sim_scores)):
-    box = list(sim_scores[i])
-    attraction.append(box[0])
-      
-  jsonString = json.dumps(attraction)
-
-  return jsonString
+  return attraction
 
