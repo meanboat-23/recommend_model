@@ -163,6 +163,24 @@ def make_visit_attraction(i, j, total_boxes, addressList, input_time, df, attrLi
   else:
     return 'Nan'
 
+
+def find_more_attraction(attrList, total_boxes, user_df, df, addressList, input_time, travel_time, move_time,
+                         allocationTime):
+  for i in range(len(total_boxes)):
+    for j in range(len(total_boxes[i])):
+      if user_df['suggested'][find_index(df, total_boxes[i][j])] == 0:
+        box = make_information(total_boxes[i][j], addressList, input_time, df, user_df)
+        if box != 'Nan':
+          if select_attraction(box, input_time) == 0:
+            attrList.append(box)
+            user_df.candidate[find_index(user_df, box.name)] = 1
+
+            travel_time += (attrList[len(attrList) - 1].stayTime + move_time)
+            if travel_time > allocationTime:
+              return
+        if abs(travel_time - allocationTime) < 30:
+          return
+
 def get_time_by_google(origins, destinations, graph):
   url = (
       "https://maps.googleapis.com/maps/api/distancematrix/json?units=metric"
@@ -275,6 +293,10 @@ def getShortestInBF_new(totalList, graph, input_time):
   find_path(0, 1 << 0, 0, current_time)
 
   return minPath, minTime
+
+def input_suggest_att(user_df, totalList):
+  for att in totalList:
+    user_df.suggested[find_index(user_df, att.name)] = 1
 
 def print_path(totalList, path):
     for x in path:
@@ -398,13 +420,24 @@ def attraction_route_recommend(input = '', input_time = '', finish_times = '', O
 
       bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
 
+      input_suggest_att(user_df, totalList)
+
       while len(bfPath) == 0:
+        user_df.candidate[find_index(user_df, totalList[-1].name)] = 0
         del totalList[len(totalList) - 1]
         attrCnt = len(totalList)
 
         graph = generateGraph(totalList, path_df)
 
         bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
+
+      if (allocationTime - bf) >= 50:
+        find_more_attraction(attrList, total_boxes, user_df, df, addressList, input_time, travel_time, move_time, allocationTime)
+        attrCnt = len(totalList)
+        graph = generateGraph(totalList)
+        bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
+
+      user_df.suggested = user_df.candidate.copy()
 
       lastpoint = totalList[bfPath[-1]].name
       first_day_visit = 0
