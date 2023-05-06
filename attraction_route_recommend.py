@@ -435,7 +435,7 @@ def attraction_route_recommend(input = '', input_time = '', finish_times = '', O
           del totalList[len(totalList) - 1]
           attrCnt = len(totalList)
 
-          graph = generateGraph(totalList)
+          graph = generateGraph(totalList, path_df)
 
           bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
 
@@ -446,7 +446,7 @@ def attraction_route_recommend(input = '', input_time = '', finish_times = '', O
                                allocationTime)
           # print_att_name(totalList)
           attrCnt = len(totalList)
-          graph = generateGraph(totalList)
+          graph = generateGraph(totalList, path_df)
           bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
 
         else:
@@ -456,7 +456,7 @@ def attraction_route_recommend(input = '', input_time = '', finish_times = '', O
 
           totalList = [startPoint]
           totalList.extend(attrList)
-          graph = generateGraph(totalList)
+          graph = generateGraph(totalList, path_df)
 
           bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
 
@@ -465,7 +465,7 @@ def attraction_route_recommend(input = '', input_time = '', finish_times = '', O
             del totalList[len(totalList) - 1]
             attrCnt = len(totalList)
 
-            graph = generateGraph(totalList)
+            graph = generateGraph(totalList, path_df)
 
             bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
           break
