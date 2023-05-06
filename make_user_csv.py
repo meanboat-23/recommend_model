@@ -9,7 +9,7 @@ Original file is located at
 
 import pandas as pd
 
-def make_csv_file(osaka_info_path = '', user_id = ''):
+def make_csv_file(osaka_info_path = '', user_id = '', dir = ''):
     df = pd.read_csv(osaka_info_path)
 
     user_df = pd.DataFrame(df.Name)
@@ -19,5 +19,6 @@ def make_csv_file(osaka_info_path = '', user_id = ''):
     user_df['clicked'] = 0
     user_df['suggested'] = 0
 
-    user_df.to_csv(user_id + '.csv', index=False)
+    user_df.to_csv(dir + user_id + '.csv', index=False)
+
 
