@@ -164,7 +164,7 @@ def make_visit_attraction(i, j, total_boxes, addressList, input_time, df, attrLi
     return 'Nan'
 
 
-def find_more_attraction(attrList, total_boxes, user_df, df, addressList, input_time, travel_time, move_time,
+def find_more_attraction(totalList, total_boxes, user_df, df, addressList, input_time, travel_time, move_time,
                          allocationTime):
   for i in range(len(total_boxes)):
     for j in range(len(total_boxes[i])):
@@ -172,10 +172,10 @@ def find_more_attraction(attrList, total_boxes, user_df, df, addressList, input_
         box = make_information(total_boxes[i][j], addressList, input_time, df, user_df)
         if box != 'Nan':
           if select_attraction(box, input_time) == 0:
-            attrList.append(box)
+            totalList.append(box)
             user_df.candidate[find_index(user_df, box.name)] = 1
 
-            travel_time += (attrList[len(attrList) - 1].stayTime + move_time)
+            travel_time += (totalList[len(totalList) - 1].stayTime + move_time)
             if travel_time > allocationTime:
               return
         if abs(travel_time - allocationTime) < 30:
@@ -283,7 +283,7 @@ def getShortestInBF_new(totalList, graph, input_time):
         instance_time = current_time + dt.timedelta(minutes = int(graph[start][i]))
         set_start, set_close = set_market_time(totalList, i, input_time)
         
-        if set_start < instance_time and instance_time < set_close:
+        if set_start < instance_time and instance_time < set_close and (instance_time + dt.timedelta(minutes = int(totalList[i].stayTime))) < set_close:
           current_time = instance_time + dt.timedelta(minutes = int(totalList[i].stayTime))
           path.append(i)
           find_path(i, visited | (1 << i), duration + graph[start][i] + int(totalList[i].stayTime), current_time)
@@ -342,6 +342,13 @@ def make_json_file(totalList, bfpath, input_time, graph):
   travel_schedule['move_times'] = move_times
 
   return travel_schedule
+
+def get_suggested_count(user_df):
+  box = list(user_df.suggested)
+  if box.count(1) == len(user_df):
+    return 1
+  else:
+    return 0
 
 class TouristAttraction:
     def __init__(self, name, address, stayTime):
@@ -422,20 +429,48 @@ def attraction_route_recommend(input = '', input_time = '', finish_times = '', O
 
       input_suggest_att(user_df, totalList)
 
-      while len(bfPath) == 0:
-        user_df.candidate[find_index(user_df, totalList[-1].name)] = 0
-        del totalList[len(totalList) - 1]
-        attrCnt = len(totalList)
+      while 1:
+        while len(bfPath) == 0:
+          user_df.candidate[find_index(user_df, totalList[-1].name)] = 0
+          del totalList[len(totalList) - 1]
+          attrCnt = len(totalList)
 
-        graph = generateGraph(totalList, path_df)
+          graph = generateGraph(totalList)
 
-        bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
+          bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
 
-      if (allocationTime - bf) >= 50:
-        find_more_attraction(attrList, total_boxes, user_df, df, addressList, input_time, travel_time, move_time, allocationTime)
-        attrCnt = len(totalList)
-        graph = generateGraph(totalList)
-        bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
+          # print_att_name(totalList)
+
+        if (allocationTime - bf) >= 70:
+          find_more_attraction(totalList, total_boxes, user_df, df, addressList, input_time, travel_time, move_time,
+                               allocationTime)
+          # print_att_name(totalList)
+          attrCnt = len(totalList)
+          graph = generateGraph(totalList)
+          bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
+
+        else:
+          break
+
+        if get_suggested_count(user_df) == 1:
+
+          totalList = [startPoint]
+          totalList.extend(attrList)
+          graph = generateGraph(totalList)
+
+          bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
+
+          while len(bfPath) == 0:
+            user_df.candidate[find_index(user_df, totalList[-1].name)] = 0
+            del totalList[len(totalList) - 1]
+            attrCnt = len(totalList)
+
+            graph = generateGraph(totalList)
+
+            bfPath, bf = getShortestInBF_new(totalList, graph, input_time)
+          break
+
+        input_suggest_att(user_df, totalList)
 
       user_df.suggested = user_df.candidate.copy()
 
