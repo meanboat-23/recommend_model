@@ -52,4 +52,4 @@ def choose_attraction(input = '', path = ''):
     for index in att_index[sorted_total_clustering_box[:][i][0]]:
       final_att_list.append(df.Name[index])
 
-  return final_att_list
+  return final_att_list, sorted_total_clustering_box
