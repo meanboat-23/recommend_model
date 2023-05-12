@@ -14,6 +14,9 @@ import matplotlib.pyplot as plt
 
 # %matplotlib inline
 
+def find_clustering_index(df = '', click_item = ''):
+  return df['cluster'][df[df['Name'] == click_item].index[0]]
+
 class ThompsonSampling:
     def __init__(self, num_items):
         self.num_items = num_items
@@ -34,16 +37,18 @@ class ThompsonSampling:
 user_models = {}
 
 def Thompson_Sampling(user_id = '', click_item = '', reco = '', total_Osakak_df = ''):
-  if user_id not in user_models:
-    user_models[user_id] = ThompsonSampling(len(total_Osakak_df.cluster.unique()))
-  recommender = user_models[user_id]
-  recommended_item = recommender.recommend()
-  reward = int(click_item == recommended_item)
-  recommender.update(recommended_item, reward)
-  print("모델이 갱신되었습니다.")
+    df = pd.read_csv(total_Osakak_df)
+    click_item = find_clustering_index(df, click_item)
+    if user_id not in user_models:
+        user_models[user_id] = ThompsonSampling(len(df.cluster.unique()))
+    recommender = user_models[user_id]
+    recommended_item = recommender.recommend()
+    reward = int(click_item == recommended_item)
+    recommender.update(recommended_item, reward)
+    print("모델이 갱신되었습니다.")
 
-  if reco == 1:
-    print("추천된 항목: ", recommended_item)
-    # return recommended_item
+    if reco == 1:
+        print("추천된 항목: ", recommended_item)
+        # return recommended_item
 
 
