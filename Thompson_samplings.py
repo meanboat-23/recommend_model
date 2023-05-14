@@ -76,7 +76,7 @@ def Thompson_Sampling(user_id = '', click_item = '', reco = '', total_Osakak_df 
         return ts_list
 
     else:
-        click_item = find_clustering_index(df, click_item)
+        click_item = int(find_clustering_index(df, click_item))
         if user_id not in user_models:
             user_models[user_id] = ThompsonSampling(len(df.cluster.unique()))
         recommender = user_models[user_id]
