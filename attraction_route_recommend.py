@@ -27,9 +27,12 @@ def find_time(dataframe, origins, destinations):
     return dataframe.cost[intersection[0]]
 
 
-def set_start_point(day_visit, df, lastpoint, addressList):
+def set_start_point(day_visit, df, lastpoint, addressList, city):
     if day_visit == 1:
-        search_name = '간사이 공항'
+        if city == 'Osaka':
+            search_name = '간사이 공항'
+        if city == 'Dokyo':
+            search_name = '하네다국제공항'
 
     else:
         search_name = lastpoint
@@ -385,9 +388,8 @@ class TouristAttraction:
 
 
 def attraction_route_recommend(input='', input_time='', finish_times='', Osaka_time_path='', User_df_path='',
-                               total_Osaka_path='', go_out_time='', go_in_time=''):
+                               total_Osaka_path='', go_out_time='', go_in_time='', city = ''):
     path_df = pd.read_csv(Osaka_time_path)
-    path_df.columns = ['origins', 'destinations', 'cost']
     user_df = pd.read_csv(User_df_path)
     df = pd.read_csv(total_Osaka_path)
 
@@ -441,7 +443,7 @@ def attraction_route_recommend(input='', input_time='', finish_times='', Osaka_t
             if travel_time > allocationTime:
                 break
 
-        startPoint = set_start_point(first_day_visit, df, lastpoint, addressList)
+        startPoint = set_start_point(first_day_visit, df, lastpoint, addressList, city)
 
         totalList = [startPoint]
         totalList.extend(attrList)
